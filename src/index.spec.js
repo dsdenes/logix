@@ -18,7 +18,7 @@ test('static expression', () => {
 
 test('generated expressions', () => {
 
-  const exp = Expression({ variables: {
+  const expression = Expression({ variables: {
     VAR1: [0, 0],
     VAR2: [0, 1],
     VAR3: [-100, 0],
@@ -30,18 +30,20 @@ test('generated expressions', () => {
     VAR9: [0, 100]
   }});
 
+  expression.setRandomTree();
+
   for (let i = 0; i < 100; i++) {
-    exp.mutate();
-    exp.evaluate({
-      VAR1: exp.getRandomValue('VAR1'),
-      VAR2: exp.getRandomValue('VAR2'),
-      VAR3: exp.getRandomValue('VAR3'),
-      VAR4: exp.getRandomValue('VAR4'),
-      VAR5: exp.getRandomValue('VAR5'),
-      VAR6: exp.getRandomValue('VAR6'),
-      VAR7: exp.getRandomValue('VAR7'),
-      VAR8: exp.getRandomValue('VAR8'),
-      VAR9: exp.getRandomValue('VAR9'),
+    expression.mutate();
+    expression.evaluate({
+      VAR1: expression.getRandomValue('VAR1'),
+      VAR2: expression.getRandomValue('VAR2'),
+      VAR3: expression.getRandomValue('VAR3'),
+      VAR4: expression.getRandomValue('VAR4'),
+      VAR5: expression.getRandomValue('VAR5'),
+      VAR6: expression.getRandomValue('VAR6'),
+      VAR7: expression.getRandomValue('VAR7'),
+      VAR8: expression.getRandomValue('VAR8'),
+      VAR9: expression.getRandomValue('VAR9'),
     });
   }
 });
@@ -63,6 +65,7 @@ test('serialization / deserialization', () => {
   };
 
   let expression = Expression(config);
+  expression.setRandomTree();
 
   for (let i = 0; i < 100; i++) {
 
