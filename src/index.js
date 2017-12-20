@@ -358,6 +358,12 @@ function getExpressionsFromSerializedGroup(group) {
   return group[1];
 }
 
+function setExpressionsAtGroupNode(node, expressions) {
+  const tmpNode = _.defaultsDeep(node);
+  tmpNode[1] = expressions;
+  return tmpNode;
+}
+
 function getVariable(name) {
   return {
     __wrapped: true,
@@ -366,8 +372,48 @@ function getVariable(name) {
   }
 }
 
+function crossover() {
+  const groupNodes = _.flatten(Array.from(arguments));
+  const groupNode1 = groupNodes[0].getPath([]);
+  const groupNode2 = groupNodes[1].getPath([]);
+  const expressions1 = getExpressionsFromGroup(groupNode1);
+  const expressions2 = getExpressionsFromGroup(groupNode2);
+  let basisGroupNode = _.random() ? groupNode1 : groupNode2;
 
+  let longerExpressions;
+  let mixinExpressions;
+  let crossoverPoint1;
+  let crossoverPoint2;
+
+  if (expressions1.length >= expressions2.length) {
+    longerExpressions = expressions1;
+    mixinExpressions = expressions2;
+
+    crossoverPoint1 = _.random(expressions1.length);
+    crossoverPoint2 = _.random(expressions1.length - crossoverPoint1) + crossoverPoint1;
+
+  } else {
+    longerExpressions = expressions2;
+    mixinExpressions = expressions1;
+
+    crossoverPoint1 = _.random(expressions2.length);
+    crossoverPoint2 = _.random(expressions2.length - crossoverPoint1) + crossoverPoint1;
+  }
+
+  const offspringExpressions = mixExpressions(longerExpressions, mixinExpressions, crossoverPoint1, crossoverPoint2);
+
+  return Expression({ tree: setExpressionsAtGroupNode(basisGroupNode, offspringExpressions) });
+}
+
+function mixExpressions(expressions, mixinExpressions, from, to) {
+  return _.concat(
+    _.slice(expressions, 0, from),
+    _.slice(mixinExpressions, from, to),
+    _.slice(expressions, to),
+  );
+}
 
 Expression.deserialize = deserialize;
+Expression.crossover = crossover;
 
 module.exports = Expression;

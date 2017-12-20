@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const Expression = require('./index');
+const assert = require('assert');
 
 test('static expression', () => {
 
@@ -88,4 +89,17 @@ test('serialization / deserialization', () => {
     let exp2 = Expression(config);
     expect(expression.evaluate(payload)).toEqual(exp2.evaluate(payload));
   }
+});
+
+test('crossover', () => {
+
+  const expression1 = Expression({ tree: Expression.deserialize(['every', [['eq', 1, 1]]]) });
+  const expression2 = Expression({ tree: Expression.deserialize(['every', [['gt', 2, 1]]]) });
+
+  const offspring = Expression.crossover(expression1, expression2);
+
+  expect(offspring.getPath([1])).toHaveLength(1);
+  expect(offspring.getPath([1,0,2])).toBe(1);
+  assert([1,2].includes(offspring.getPath([1,0,1])));
+
 });
