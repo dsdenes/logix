@@ -214,14 +214,6 @@ function expression(config = {}) {
     return Number.isFinite(expressionValue);
   }
 
-  function getLogicFromGroup(group) {
-    return group[0];
-  }
-
-  function getExpressionsFromGroup(group) {
-    return group[1];
-  }
-
   function setExpressionsAtGroupPath(path, expressions) {
     path.push([1]);
     setPath(path, expressions);
@@ -348,6 +340,14 @@ function deserialize(node) {
 
 function isSerializedGroupNode(node) {
   return Array.isArray(node) && node[0] in logics;
+}
+
+function getLogicFromGroup(group) {
+  return group[0];
+}
+
+function getExpressionsFromGroup(group) {
+  return group[1];
 }
 
 function getLogicFromSerializedGroup(group) {
