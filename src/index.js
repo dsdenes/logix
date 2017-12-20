@@ -27,7 +27,7 @@ const operators = {
   lte
 };
 
-function expression(config = {}) {
+function Expression(config = {}) {
 
   config = _.defaults(config, {
     tree: [every, []],
@@ -366,6 +366,8 @@ function getVariable(name) {
   }
 }
 
-expression.deserialize = deserialize;
 
-module.exports = expression;
+
+Expression.deserialize = deserialize;
+
+module.exports = Expression;
