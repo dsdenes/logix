@@ -5,15 +5,15 @@ $ npm install expression
 
 # Usage
 ```javascript
-const expression = require('expression');
+const Expression = require('expression');
 const _ = require('lodash');
 
-const exp = expression({
-  tree: [_.every, [
-    [_.eq, 1, 1],
-    [_.gt, 2, 1],
-    [_.gt, expression.getVariable('var1'), 1],    
-  ]]
+const exp = Expression({
+  tree: Expression.deserialize(['every', [
+    ['eq', 1, 1],
+    ['gt', 2, 1],
+    ['gt', Expression.getVariable('var1'), 1],    
+  ]])
 });
 
 const result = exp.evaluate({
@@ -32,6 +32,8 @@ const exp = expression({
   }
 });
 
+exp.setRandomTree();
+
 exp.mutate();
 exp.mutate();
 exp.mutate();
@@ -42,5 +44,3 @@ exp.evaluate({
   var1: 10,
   var2: 20
 });
-
-```
