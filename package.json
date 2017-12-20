@@ -6,7 +6,11 @@
   "scripts": {
     "test": "jest --transformIgnorePatterns [\"node_modules\", \"*.js\"] src/index.js",
     "watch": "jest --watch --transformIgnorePatterns [\"node_modules\", \"*.js\"] src/index.js",
-    "build": "babel src/index.js --out-dir lib/"
+    "build": "babel src/index.js --out-dir lib/",
+    "postpublish": "PACKAGE_VERSION=$(node -pe \"require('./package.json').version\") && git tag $PACKAGE_VERSION && git push --tags",
+    "release-patch": "npm version patch && npm publish",
+    "release-minor": "npm version minor && npm publish",
+    "release-major": "npm version major && npm publish"
   },
   "dependencies": {
     "assert": "^1.4.1",
