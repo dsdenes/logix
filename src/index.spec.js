@@ -97,8 +97,8 @@ test('crossover', () => {
 
   const offspring = Expression.crossover(expression1, expression2);
 
-  expect(offspring.getPath([1])).toHaveLength(1);
-  expect(offspring.getPath([1,0,2])).toBe(1);
-  assert([1,2].includes(offspring.getPath([1,0,1])));
+  expect(offspring.getPath([1])).toHaveLength(2);
+  expect(offspring.getPath([1,0,1])).toBe(1);
+  expect(offspring.getPath([1,1,1])).toBe(2);
 
 });

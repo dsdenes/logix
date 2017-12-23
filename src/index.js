@@ -286,7 +286,7 @@ function Expression(_config = {}) {
   }
 
   function setRandomTree() {
-    tree = traverse([_.sample(Object.values(logics)), [getRandomExpression()]]);
+    tree = traverse([every, [getRandomExpression()]]);
   }
 
   function getRandomExpression() {
@@ -390,25 +390,35 @@ function crossover() {
   let mixinExpressions;
   let crossoverPoint1;
   let crossoverPoint2;
+  let offspringExpressions;
 
-  if (expressions1.length >= expressions2.length) {
-    longerExpressions = expressions1;
-    mixinExpressions = expressions2;
-
-    crossoverPoint1 = _.random(expressions1.length);
-    crossoverPoint2 = _.random(expressions1.length - crossoverPoint1) + crossoverPoint1;
+  if (expressions1.length === 1 && expressions2.length === 1) {
+    offspringExpressions = [expressions1[0], expressions2[0]];
 
   } else {
-    longerExpressions = expressions2;
-    mixinExpressions = expressions1;
+    if (expressions1.length > expressions2.length) {
+      longerExpressions = expressions1;
+      mixinExpressions = expressions2;
 
-    crossoverPoint1 = _.random(expressions2.length);
-    crossoverPoint2 = _.random(expressions2.length - crossoverPoint1) + crossoverPoint1;
+      crossoverPoint1 = _.random(expressions1.length);
+      crossoverPoint2 = _.random(expressions1.length - crossoverPoint1) + crossoverPoint1;
+
+    } else {
+      longerExpressions = expressions2;
+      mixinExpressions = expressions1;
+
+      crossoverPoint1 = _.random(expressions2.length);
+      crossoverPoint2 = _.random(expressions2.length - crossoverPoint1) + crossoverPoint1;
+    }
+
+    offspringExpressions = mixExpressions(longerExpressions, mixinExpressions, crossoverPoint1, crossoverPoint2);
   }
 
-  const offspringExpressions = mixExpressions(longerExpressions, mixinExpressions, crossoverPoint1, crossoverPoint2);
-
-  return Expression({ tree: setExpressionsAtGroupNode(basisGroupNode, offspringExpressions) });
+  return Expression(Object.assign(
+      {},
+      config,
+      { tree: setExpressionsAtGroupNode(basisGroupNode, offspringExpressions) }
+    ));
 }
 
 function mixExpressions(expressions, mixinExpressions, from, to) {
