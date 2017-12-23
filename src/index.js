@@ -124,7 +124,8 @@ function Expression(_config = {}) {
   }
 
   function getPath(path) {
-    return tree.get(path);
+    // traverse returns by reference
+    return _.cloneDeep(tree.get(path));
   }
 
   function setPath(path, payload) {
@@ -378,6 +379,7 @@ function getVariable(name) {
 
 function crossover() {
   const groupNodes = _.flatten(Array.from(arguments));
+  const config = _.cloneDeep(groupNodes[0].config());
   const groupNode1 = groupNodes[0].getPath([]);
   const groupNode2 = groupNodes[1].getPath([]);
   const expressions1 = getExpressionsFromGroup(groupNode1);

@@ -2,6 +2,25 @@ const _ = require('lodash');
 const Expression = require('./index');
 const assert = require('assert');
 
+const variables = {
+  VAR1: [0, 0],
+  VAR2: [0, 1],
+  VAR3: [-100, 0],
+  VAR4: [0, 2],
+  VAR5: [0, 1000],
+  VAR6: [0, 100],
+  VAR7: [0, 100],
+  VAR8: [0, 100],
+  VAR9: [0, 100]
+};
+
+test(`don't pass referenced object`, () => {
+  const expression = Expression({ tree: Expression.deserialize(['some', [['eq', 1, 1]]]) });
+  const rootPathValue = expression.getPath([]);
+  rootPathValue[1][0][1] = 2;
+  expect(expression.getPath([1,0,1])).toBe(1);
+});
+
 test('static expression', () => {
 
   expect(Expression({ tree: Expression.deserialize(['some', [['eq', 1, 1]]]) }).evaluate()).toBe(true);
@@ -19,17 +38,7 @@ test('static expression', () => {
 
 test('generated expressions', () => {
 
-  const expression = Expression({ variables: {
-    VAR1: [0, 0],
-    VAR2: [0, 1],
-    VAR3: [-100, 0],
-    VAR4: [0, 2],
-    VAR5: [0, 1000],
-    VAR6: [0, 100],
-    VAR7: [0, 100],
-    VAR8: [0, 100],
-    VAR9: [0, 100]
-  }});
+  const expression = Expression({ variables });
 
   expression.setRandomTree();
 
@@ -52,17 +61,7 @@ test('generated expressions', () => {
 test('serialization / deserialization', () => {
 
   const config = {
-    variables: {
-      VAR1: [0, 0],
-      VAR2: [0, 1],
-      VAR3: [-100, 0],
-      VAR4: [0, 2],
-      VAR5: [0, 1000],
-      VAR6: [0, 100],
-      VAR7: [0, 100],
-      VAR8: [0, 100],
-      VAR9: [0, 100]
-    }
+    variables
   };
 
   let expression = Expression(config);
