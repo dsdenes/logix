@@ -80,7 +80,6 @@ function Expression(_config = {}) {
   }
 
   function evaluate(payload = {}, node = getPath([])) {
-    // console.log(util.inspect(node, false, null));
     if (isGroupNode(node)) {
       const logic = getLogicFromGroup(node);
       const expressions = getExpressionsFromGroup(node);
@@ -102,15 +101,12 @@ function Expression(_config = {}) {
     const rand = _.random(true);
 
     try {
-      // 20%
       if (_.inRange(rand, 0, 0.10)) {
         addRandomExpression();
 
-        // 20%
       } else if (_.inRange(rand, 0.10, 0.20)) {
         removeRandomExpression();
 
-        // 60%
       } else {
         mutateRandomExpression();
       }
