@@ -1,6 +1,4 @@
-const _ = require('lodash');
 const Expression = require('./index');
-const assert = require('assert');
 
 const variables = {
   VAR1: [0, 0],
