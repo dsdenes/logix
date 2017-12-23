@@ -1,12 +1,17 @@
+Generate, mutate logical expressions.
 # Install
 ```bash
-$ npm install expression
+$ npm install logix
 ```
+
+# Features
+- Generate random logical expressions
+- Mutate expressions
+- Crossover two expressions
 
 # Usage
 ```javascript
-const Expression = require('expression');
-const _ = require('lodash');
+const Expression = require('logix');
 
 const exp = Expression({
   tree: Expression.deserialize(['every', [
