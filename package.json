@@ -1,8 +1,11 @@
 {
-  "name": "expression",
+  "name": "logix",
   "version": "0.2.0",
   "main": "src/index.js",
   "license": "MIT",
+  "engines": {
+    "node": ">=8.9.3"
+  },
   "scripts": {
     "test": "jest --transformIgnorePatterns [\"node_modules\", \"*.js\"] src/index.js",
     "watch": "jest --watch --transformIgnorePatterns [\"node_modules\", \"*.js\"] src/index.js",
