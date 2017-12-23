@@ -103,11 +103,11 @@ function Expression(_config = {}) {
 
     try {
       // 20%
-      if (_.inRange(rand, 0, 0.20)) {
+      if (_.inRange(rand, 0, 0.10)) {
         addRandomExpression();
 
         // 20%
-      } else if (_.inRange(rand, 0.2, 0.4)) {
+      } else if (_.inRange(rand, 0.10, 0.20)) {
         removeRandomExpression();
 
         // 60%
@@ -298,7 +298,7 @@ function Expression(_config = {}) {
     const rand = _.random(true);
 
     // Variable expression
-    if (_.inRange(rand, 0, 0.7)) {
+    if (_.inRange(rand, 0, 0.8)) {
       expr = [];
       expr.push(_.sample(Object.values(operators)));
       const firstVariableName = _.sample(availableVariableBounds);
