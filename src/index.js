@@ -27,21 +27,21 @@ const operators = {
   lte
 };
 
-function Expression(config = {}) {
+function Expression(_config = {}) {
 
-  config = _.defaults(config, {
+  _config = _.defaults(_config, {
     tree: [every, []],
     variables: {}
   });
 
-  // console.log('INTI: ', config.tree);
-  assert(isGroupNode(config.tree), 'The root level of the given tree has to be a logical group.');
+  assert(isGroupNode(_config.tree), 'The root level of the given tree has to be a logical group.');
 
-  const variables = Object.assign({}, config.variables);
+  const variables = Object.assign({}, _config.variables);
 
-  let tree = traverse(config.tree);
+  let tree = traverse(_config.tree);
 
   return {
+    config,
     evaluate,
     mutate,
     getPath,
@@ -52,6 +52,10 @@ function Expression(config = {}) {
     serialize,
     deserialize
   };
+
+  function config() {
+    return _config;
+  }
 
   function serialize(node = getPath([])) {
     if (isGroupNode(node)) {
