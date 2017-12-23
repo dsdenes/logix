@@ -1,5 +1,6 @@
 {
   "name": "logix",
+  "author": "Denes Pal <dsdenes@gmail.com>",
   "version": "0.2.0",
   "main": "src/index.js",
   "license": "MIT",
