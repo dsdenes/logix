@@ -129,7 +129,7 @@ function Expression(_config = {}) {
   }
 
   function setPath(path, payload) {
-    return tree.set(path, payload);
+    tree.set(path, payload);
   }
 
   function mutateRandomExpression() {
