@@ -29,7 +29,7 @@ const operators = {
 
 function Expression(_config = {}) {
 
-  _config = _.defaults(_config, {
+  _.defaultsDeep(_config, {
     tree: [every, []],
     variables: {}
   });
@@ -366,11 +366,11 @@ function getVariable(name) {
 function crossover() {
   const groupNodes = _.flatten(Array.from(arguments));
   const config = _.clone(groupNodes[0].config());
-  const groupNode1 = groupNodes[0].getPath([]);
-  const groupNode2 = groupNodes[1].getPath([]);
+  const groupNode1 = _.cloneDeep(groupNodes[0].getPath([]));
+  const groupNode2 = _.cloneDeep(groupNodes[1].getPath([]));
   const expressions1 = getExpressionsFromGroup(groupNode1);
   const expressions2 = getExpressionsFromGroup(groupNode2);
-  let basisGroupNode = _.cloneDeep(_.random() ? groupNode1 : groupNode2);
+  let basisGroupNode = _.random() ? groupNode1 : groupNode2;
 
   let longerExpressions;
   let mixinExpressions;
