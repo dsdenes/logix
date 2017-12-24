@@ -44,6 +44,9 @@ function Expression(_config = {}) {
     config,
     evaluate,
     mutate,
+    mutateRandomExpression,
+    removeRandomExpression,
+    addRandomExpression,
     getPath,
     print,
     setRandomTree,
@@ -91,7 +94,6 @@ function Expression(_config = {}) {
   }
 
   function evaluateExpression(expression, payload) {
-    // console.log('EVALUATE', util.inspect(expression, false, null));
     const operator = getOperatorFromExpression(expression);
     const expressionValues = _.tail(expression).map(value => getValue(value, payload));
     return operator.apply(null, expressionValues);
@@ -120,8 +122,8 @@ function Expression(_config = {}) {
   }
 
   function getPath(path) {
-    // traverse returns by reference
-    return _.cloneDeep(tree.get(path));
+    // reference
+    return tree.get(path);
   }
 
   function setPath(path, payload) {
@@ -133,13 +135,13 @@ function Expression(_config = {}) {
     if (!_.isArray(expressionPathArray) || !expressionPathArray.length) {
       throw new CantMutateError();
     }
+    // reference
     let expression = getPath(expressionPathArray);
     let payload = getOneSideExpressionPayload(expression);
     const variableName = getOneSideExpressionVariableName(expression);
     let newPayload;
     while ((newPayload = modifyByRandomPercent(payload)) && !isValidVariablePayload(variableName, newPayload));
-    expression = setOneSideExpressionPayload(expression, newPayload);
-    setExpressionAtExpressionPath(expressionPathArray, expression);
+    setOneSideExpressionPayload(expression, newPayload);
   }
 
   function removeRandomExpression() {
@@ -148,7 +150,8 @@ function Expression(_config = {}) {
     const expressions = getExpressionsFromGroup(expressionGroup);
     if (expressions.length > 1) {
       const expression = _.sample(expressions);
-      removeExpressionAtGroupPath(expressionGroupPath, expression);
+      _.pull(expressions, expression);
+      setExpressionsAtGroupPath(expressionGroupPath, expressions);
     }
   }
 
@@ -162,13 +165,6 @@ function Expression(_config = {}) {
     const expressionGroup = getPath(expressionGroupPath);
     const expressions = getExpressionsFromGroup(expressionGroup);
     expressions.push(expression);
-    setExpressionsAtGroupPath(expressionGroupPath, expressions);
-  }
-
-  function removeExpressionAtGroupPath(expressionGroupPath, expression) {
-    const expressionGroup = getPath(expressionGroupPath);
-    const expressions = getExpressionsFromGroup(expressionGroup);
-    _.pull(expressions, expression);
     setExpressionsAtGroupPath(expressionGroupPath, expressions);
   }
 
@@ -189,8 +185,8 @@ function Expression(_config = {}) {
   }
 
   function setOneSideExpressionPayload(expression, payload) {
+    // reference
     expression[2] = payload;
-    return expression;
   }
 
   function getOperatorFromExpression(expression) {
@@ -217,10 +213,6 @@ function Expression(_config = {}) {
 
   function setExpressionsAtGroupPath(path, expressions) {
     path.push([1]);
-    setPath(path, expressions);
-  }
-
-  function setExpressionAtExpressionPath(path, expressions) {
     setPath(path, expressions);
   }
 
@@ -360,9 +352,7 @@ function getExpressionsFromSerializedGroup(group) {
 }
 
 function setExpressionsAtGroupNode(node, expressions) {
-  const tmpNode = _.defaultsDeep(node);
-  tmpNode[1] = expressions;
-  return tmpNode;
+  node[1] = expressions;
 }
 
 function getVariable(name) {
@@ -375,12 +365,12 @@ function getVariable(name) {
 
 function crossover() {
   const groupNodes = _.flatten(Array.from(arguments));
-  const config = _.cloneDeep(groupNodes[0].config());
+  const config = _.clone(groupNodes[0].config());
   const groupNode1 = groupNodes[0].getPath([]);
   const groupNode2 = groupNodes[1].getPath([]);
   const expressions1 = getExpressionsFromGroup(groupNode1);
   const expressions2 = getExpressionsFromGroup(groupNode2);
-  let basisGroupNode = _.random() ? groupNode1 : groupNode2;
+  let basisGroupNode = _.cloneDeep(_.random() ? groupNode1 : groupNode2);
 
   let longerExpressions;
   let mixinExpressions;
@@ -410,10 +400,12 @@ function crossover() {
     offspringExpressions = mixExpressions(longerExpressions, mixinExpressions, crossoverPoint1, crossoverPoint2);
   }
 
+  setExpressionsAtGroupNode(basisGroupNode, offspringExpressions);
+
   return Expression(Object.assign(
       {},
       config,
-      { tree: setExpressionsAtGroupNode(basisGroupNode, offspringExpressions) }
+      { tree: basisGroupNode }
     ));
 }
 

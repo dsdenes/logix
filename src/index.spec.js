@@ -12,11 +12,37 @@ const variables = {
   VAR9: [0, 100]
 };
 
-test(`don't pass referenced object`, () => {
+test(`Pass objects by reference for the sake of speed`, () => {
   const expression = Expression({ tree: Expression.deserialize(['some', [['eq', 1, 1]]]) });
   const rootPathValue = expression.getPath([]);
   rootPathValue[1][0][1] = 2;
+  expect(expression.getPath([1,0,1])).toBe(2);
+});
+
+test(`Mutate random expression`, () => {
+  const expression = Expression({ tree: Expression.deserialize(['every', [['eq', { __wrapped: true, name: 'VAR4' }, 1]]]), variables });
+  expect(expression.getPath([1,0,2])).toBe(1);
+  expression.mutateRandomExpression();
+  expect(expression.getPath([1,0,2])).not.toBe(1);
+});
+
+test(`Remove random expression`, () => {
+  const expression = Expression({ tree: Expression.deserialize(['every', [['eq', 1, 1],['eq', 1, 2]]]), variables });
+  expect(expression.getPath([1])).toHaveLength(2);
+  expect(expression.getPath([1,0,2])).toBe(1);
+  expect(expression.getPath([1,1,2])).toBe(2);
+  expression.removeRandomExpression();
+  expect(expression.getPath([1])).toHaveLength(1);
   expect(expression.getPath([1,0,1])).toBe(1);
+});
+
+test(`Add random expression`, () => {
+  const expression = Expression({ tree: Expression.deserialize(['every', [['eq', 1, 1]]]), variables });
+  expect(expression.getPath([1])).toHaveLength(1);
+  expect(expression.getPath([1,0,1])).toBe(1);
+  expect(expression.getPath([1,0,2])).toBe(1);
+  expression.addRandomExpression();
+  expect(expression.getPath([1])).toHaveLength(2);
 });
 
 test('static expression', () => {
@@ -94,6 +120,14 @@ test('crossover', () => {
   const expression2 = Expression({ tree: Expression.deserialize(['every', [['gt', 2, 1]]]) });
 
   const offspring = Expression.crossover(expression1, expression2);
+
+  expect(expression1.getPath([1])).toHaveLength(1);
+  expect(expression1.getPath([1,0,1])).toBe(1);
+  expect(expression1.getPath([1,0,2])).toBe(1);
+
+  expect(expression2.getPath([1])).toHaveLength(1);
+  expect(expression2.getPath([1,0,1])).toBe(2);
+  expect(expression2.getPath([1,0,2])).toBe(1);
 
   expect(offspring.getPath([1])).toHaveLength(2);
   expect(offspring.getPath([1,0,1])).toBe(1);
