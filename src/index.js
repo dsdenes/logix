@@ -2,8 +2,10 @@ const _ = require('lodash');
 const traverse = require('traverse');
 const util = require('util');
 const assert = require('assert');
+const WeightedPicker = require('weighted-picker').default;
 
 class CantMutateError extends Error {}
+let retryMutate = 0;
 
 function every() { return  _.every.apply(null, arguments); }
 function some() { return  _.some.apply(null, arguments); }
@@ -99,21 +101,33 @@ function Expression(_config = {}) {
     return operator.apply(null, expressionValues);
   }
 
-  function mutate() {
-    const rand = _.random(true);
+  function mutate(_config = {}) {
+
+    _config = Object.assign({
+      add: 1,
+      remove: 1,
+      mutate: 8,
+    }, _config);
+
+    const weights = Object.values(_config);
+
+    const possibleMutations = [
+      addRandomExpression,
+      removeRandomExpression,
+      mutateRandomExpression
+    ];
+
+    const picker = new WeightedPicker(3, index => weights[index]);
+    const chosenMutation = possibleMutations[picker.pickOne()];
 
     try {
-      if (_.inRange(rand, 0, 0.10)) {
-        addRandomExpression();
-
-      } else if (_.inRange(rand, 0.10, 0.20)) {
-        removeRandomExpression();
-
-      } else {
-        mutateRandomExpression();
-      }
+      chosenMutation();
+      retryMutate = 0;
     } catch (err) {
       if (err instanceof CantMutateError) {
+        if (retryMutate++ > 50) {
+          throw err;
+        }
         mutate();
       } else {
         throw err;
