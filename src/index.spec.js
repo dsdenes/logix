@@ -114,12 +114,12 @@ test('serialization / deserialization', () => {
   }
 });
 
-test('crossover', () => {
+test('crossover, concat', () => {
 
   const expression1 = Expression({ tree: Expression.deserialize(['every', [['eq', 1, 1]]]), variables });
   const expression2 = Expression({ tree: Expression.deserialize(['every', [['gt', 2, 1]]]), variables });
 
-  const offspring = Expression.crossover(expression1, expression2);
+  const offspring = Expression.crossover(expression1, expression2, { singleExpressionsRandom: 0, singleExpressionsConcat: 1 });
   offspring.mutate({ add: 1, remove: 0, mutate: 0 });
 
   expect(expression1.getPath([1])).toHaveLength(1);
@@ -133,5 +133,26 @@ test('crossover', () => {
   expect(offspring.getPath([1])).toHaveLength(3);
   expect(offspring.getPath([1,0,1])).toBe(1);
   expect(offspring.getPath([1,1,1])).toBe(2);
+
+});
+
+test('crossover, random', () => {
+
+  const expression1 = Expression({ tree: Expression.deserialize(['every', [['eq', 1, 1]]]), variables });
+  const expression2 = Expression({ tree: Expression.deserialize(['every', [['gt', 2, 1]]]), variables });
+
+  const offspring = Expression.crossover(expression1, expression2, { singleExpressionsRandom: 1, singleExpressionsConcat: 0 });
+  offspring.mutate({ add: 1, remove: 0, mutate: 0 });
+
+  expect(expression1.getPath([1])).toHaveLength(1);
+  expect(expression1.getPath([1,0,1])).toBe(1);
+  expect(expression1.getPath([1,0,2])).toBe(1);
+
+  expect(expression2.getPath([1])).toHaveLength(1);
+  expect(expression2.getPath([1,0,1])).toBe(2);
+  expect(expression2.getPath([1,0,2])).toBe(1);
+
+  expect(offspring.getPath([1])).toHaveLength(2);
+  expect(offspring.getPath([1,0,2])).toBe(1);
 
 });

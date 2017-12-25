@@ -377,11 +377,11 @@ function getVariable(name) {
   }
 }
 
-function crossover() {
-  const groupNodes = _.flatten(Array.from(arguments));
-  const config = _.clone(groupNodes[0].config());
-  const groupNode1 = _.cloneDeep(groupNodes[0].getPath([]));
-  const groupNode2 = _.cloneDeep(groupNodes[1].getPath([]));
+function crossover(groupExpression1, groupExpression2, _config = {}) {
+
+  const expressionConfig = _.clone(groupExpression1.config());
+  const groupNode1 = _.cloneDeep(groupExpression1.getPath([]));
+  const groupNode2 = _.cloneDeep(groupExpression2.getPath([]));
   const expressions1 = getExpressionsFromGroup(groupNode1);
   const expressions2 = getExpressionsFromGroup(groupNode2);
   let basisGroupNode = _.random() ? groupNode1 : groupNode2;
@@ -392,8 +392,22 @@ function crossover() {
   let crossoverPoint2;
   let offspringExpressions;
 
+  _config = Object.assign({
+    singleExpressionsConcat: 1,
+    singleExpressionsRandom: 1
+  }, _config);
+
   if (expressions1.length === 1 && expressions2.length === 1) {
-    offspringExpressions = [expressions1[0], expressions2[0]];
+
+    const weights = Object.values(_config);
+    const singleExpressionsPicker = new WeightedPicker(2, index => weights[index]);
+
+    const possibleOffspringExpressions = [
+      [expressions1[0], expressions2[0]],
+      [_.sample([expressions1[0], expressions2[0]])]
+    ];
+
+    offspringExpressions = possibleOffspringExpressions[singleExpressionsPicker.pickOne()];
 
   } else {
     if (expressions1.length > expressions2.length) {
@@ -418,7 +432,7 @@ function crossover() {
 
   return Expression(Object.assign(
       {},
-      config,
+      expressionConfig,
       { tree: basisGroupNode }
     ));
 }
