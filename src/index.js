@@ -56,6 +56,7 @@ function Expression(_config = {}) {
     setRandomTree,
     getRandomValue,
     getVariable,
+    getVariableDecimals,
     modifyByRandomPercent,
     serialize,
     deserialize
@@ -273,7 +274,15 @@ function Expression(_config = {}) {
   }
 
   function getRandomValue(variableName) {
-    return _.random(getVariableLowerBound(variableName), getVariableUpperBound(variableName), true);
+    const decimals = getVariableDecimals(variableName);
+    return _.round(_.random(getVariableLowerBound(variableName), getVariableUpperBound(variableName), true), decimals);
+  }
+
+  function getVariableDecimals(variableName) {
+    const lowerBound = getVariableLowerBound(variableName);
+    const upperBound = getVariableUpperBound(variableName);
+    const boundDifference = upperBound - lowerBound;
+    return _.max([0, 8 - String(_.round(boundDifference * 10000)).length]);
   }
 
   function modifyByRandomPercent(variableName, value) {

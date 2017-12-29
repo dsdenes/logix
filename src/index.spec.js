@@ -159,6 +159,31 @@ test('crossover, random', () => {
 
 });
 
+test('getVariableDecimals', () => {
+  const expression = Expression({ variables: {
+    ADX30: [0, 66.2250],
+    ADX50: [0, 75.0768],
+    RSI14: [0, 93.8693],
+    BBANDSU: [1.047578578615194, 1.210693062112635],
+    BBANDSM: [1.0469255714285708, 1.210349761904763],
+    BBANDSL: [1.0456893947159194, 1.210103289526245],
+    DEMA: [1.0468246337377913, 1.2102661612297378],
+    MACD: [-0.004368756239813143, 0.004310827468728018],
+    MACDSignal: [-0.0034490735313215614, 0.0034621316849092745],
+    MACDHist: [-0.0023109015463132735, 0.002188928613558824],
+  }});
+
+  expect(expression.getVariableDecimals('ADX30')).toBe(2);
+  expect(expression.getVariableDecimals('ADX50')).toBe(2);
+  expect(expression.getVariableDecimals('RSI14')).toBe(2);
+  expect(expression.getVariableDecimals('BBANDSU')).toBe(4);
+  expect(expression.getVariableDecimals('BBANDSM')).toBe(4);
+  expect(expression.getVariableDecimals('BBANDSL')).toBe(4);
+  expect(expression.getVariableDecimals('DEMA')).toBe(4);
+  expect(expression.getVariableDecimals('MACD')).toBe(6);
+  expect(expression.getVariableDecimals('MACDSignal')).toBe(6);
+  expect(expression.getVariableDecimals('MACDHist')).toBe(6);
+});
 
 test.only('modifyByRandomPercent', () => {
   const expression = Expression({ variables });
