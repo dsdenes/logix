@@ -33,7 +33,9 @@ function Expression(_config = {}) {
 
   _.defaultsDeep(_config, {
     tree: [every, []],
-    variables: {}
+    variables: {},
+    mutateMinPercent: 0.05,
+    mutateMaxPercent: 0.15,
   });
 
   assert(isGroupNode(_config.tree), 'The root level of the given tree has to be a logical group.');
@@ -54,6 +56,7 @@ function Expression(_config = {}) {
     setRandomTree,
     getRandomValue,
     getVariable,
+    modifyByRandomPercent,
     serialize,
     deserialize
   };
@@ -154,7 +157,7 @@ function Expression(_config = {}) {
     let payload = getOneSideExpressionPayload(expression);
     const variableName = getOneSideExpressionVariableName(expression);
     let newPayload;
-    while ((newPayload = modifyByRandomPercent(payload)) && !isValidVariablePayload(variableName, newPayload));
+    while ((newPayload = modifyByRandomPercent(variableName, payload)) && !isValidVariablePayload(variableName, newPayload));
     setOneSideExpressionPayload(expression, newPayload);
   }
 
@@ -273,10 +276,28 @@ function Expression(_config = {}) {
     return _.random(getVariableLowerBound(variableName), getVariableUpperBound(variableName), true);
   }
 
-  function modifyByRandomPercent(value, maxPercent = 10) {
-    const percent = _.random(0, maxPercent, true);
-    const share = value * (percent / 100);
-    return _.random() ? value + share : value - share;
+  function modifyByRandomPercent(variableName, value) {
+    const modifyPercent = _.random(_config.mutateMinPercent, _config.mutateMaxPercent, true);
+    const decimals = getVariableDecimals(variableName);
+    const lowerBound = getVariableLowerBound(variableName);
+    const upperBound = getVariableUpperBound(variableName);
+
+    if (lowerBound === upperBound) {
+      return value;
+    }
+
+    const boundsDifference = upperBound - lowerBound;
+    const modifyValue = boundsDifference * modifyPercent;
+
+    let resultValue;
+    if (value + modifyValue > upperBound) {
+      resultValue = _.round(value - modifyValue, decimals);
+    } else if (value - modifyValue < lowerBound) {
+      resultValue = _.round(value + modifyValue, decimals);
+    } else {
+      resultValue = _.round(_.random() ? value + modifyValue : value - modifyValue, decimals);
+    }
+    return resultValue;
   }
 
   function getVariableLowerBound(variableName) {

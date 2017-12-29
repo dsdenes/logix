@@ -1,4 +1,6 @@
 const Expression = require('./index');
+const assert = require('assert');
+const _ = require('lodash');
 
 const variables = {
   VAR1: [0, 0],
@@ -20,7 +22,7 @@ test(`Pass objects by reference for the sake of speed`, () => {
 });
 
 test(`Mutate random expression`, () => {
-  const expression = Expression({ tree: Expression.deserialize(['every', [['eq', { __wrapped: true, name: 'VAR4' }, 1]]]), variables });
+  const expression = Expression({ tree: Expression.deserialize(['every', [['eq', { __wrapped: true, name: 'VAR5' }, 1]]]), variables });
   expect(expression.getPath([1,0,2])).toBe(1);
   expression.mutateRandomExpression();
   expect(expression.getPath([1,0,2])).not.toBe(1);
@@ -154,5 +156,19 @@ test('crossover, random', () => {
 
   expect(offspring.getPath([1])).toHaveLength(2);
   expect(offspring.getPath([1,0,2])).toBe(1);
+
+});
+
+
+test.only('modifyByRandomPercent', () => {
+  const expression = Expression({ variables });
+  for (let i = 0; i < 100; i++) {
+    const variableName = _.sample(Object.keys(variables));
+    const initialValue = expression.getRandomValue(variableName);
+    const lowerBound = variables[variableName][0];
+    const upperBound = variables[variableName][1];
+    const modifiedValue = expression.modifyByRandomPercent(variableName, initialValue);
+    assert(_.clamp(modifiedValue, lowerBound, upperBound) === modifiedValue);
+  }
 
 });
