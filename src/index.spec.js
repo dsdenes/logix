@@ -3,15 +3,39 @@ const assert = require('assert');
 const _ = require('lodash');
 
 const variables = {
-  VAR1: [0, 0],
-  VAR2: [0, 1],
-  VAR3: [-100, 0],
-  VAR4: [0, 2],
-  VAR5: [0, 1000],
-  VAR6: [0, 100],
-  VAR7: [0, 100],
-  VAR8: [0, 100],
-  VAR9: [0, 100]
+  VAR1: {
+    lowerBound: 0,
+    upperBound: 0,
+  },
+  VAR2: {
+    lowerBound: 0,
+    upperBound: 1
+  },
+  VAR3: {
+    lowerBound: -100,
+    upperBound: 0
+  },
+  VAR4: {
+    lowerBound: 0,
+    upperBound: 2
+  },
+  VAR5: {
+    lowerBound: 0,
+    upperBound: 1000
+  },
+  VAR6: {
+    lowerBound: 0,
+    upperBound: 100
+  },
+  VAR7: {
+    compare: []
+  },
+  VAR8: {
+    compare: ['VAR7']
+  },
+  VAR9: {
+    compare: ['VAR8', 'VAR7']
+  },
 };
 
 test(`Pass objects by reference for the sake of speed`, () => {
@@ -77,9 +101,6 @@ test('generated expressions', () => {
       VAR4: expression.getRandomValue('VAR4'),
       VAR5: expression.getRandomValue('VAR5'),
       VAR6: expression.getRandomValue('VAR6'),
-      VAR7: expression.getRandomValue('VAR7'),
-      VAR8: expression.getRandomValue('VAR8'),
-      VAR9: expression.getRandomValue('VAR9'),
     });
   }
 });
@@ -102,9 +123,6 @@ test('serialization / deserialization', () => {
       VAR4: expression.getRandomValue('VAR4'),
       VAR5: expression.getRandomValue('VAR5'),
       VAR6: expression.getRandomValue('VAR6'),
-      VAR7: expression.getRandomValue('VAR7'),
-      VAR8: expression.getRandomValue('VAR8'),
-      VAR9: expression.getRandomValue('VAR9'),
     };
 
     expression.mutate();
@@ -161,16 +179,42 @@ test('crossover, random', () => {
 
 test('getVariableDecimals', () => {
   const expression = Expression({ variables: {
-    ADX30: [0, 66.2250],
-    ADX50: [0, 75.0768],
-    RSI14: [0, 93.8693],
-    BBANDSU: [1.047578578615194, 1.210693062112635],
-    BBANDSM: [1.0469255714285708, 1.210349761904763],
-    BBANDSL: [1.0456893947159194, 1.210103289526245],
-    DEMA: [1.0468246337377913, 1.2102661612297378],
-    MACD: [-0.004368756239813143, 0.004310827468728018],
-    MACDSignal: [-0.0034490735313215614, 0.0034621316849092745],
-    MACDHist: [-0.0023109015463132735, 0.002188928613558824],
+    ADX30: {
+      lowerBound: 0,
+      upperBound: 66.2250
+    },
+    ADX50: {
+      lowerBound: 0,
+      upperBound: 75.0768
+    },
+    RSI14: {
+      lowerBound: 0,
+      upperBound: 93.8693
+    },
+    BBANDSU: {
+      lowerBound: 1.047578578615194,
+      upperBound: 1.210693062112635
+    },
+    BBANDSM: {
+      lowerBound: 1.0469255714285708,
+      upperBound: 1.210349761904763
+    },
+    BBANDSL: {
+      lowerBound: 1.0456893947159194,
+      upperBound: 1.210103289526245
+    },
+    DEMA: {
+      lowerBound: 1.0468246337377913,
+      upperBound: 1.2102661612297378
+    },
+    MACD: {
+      lowerBound: -0.004368756239813143,
+      upperBound: 0.004310827468728018
+    },
+    MACDSignal: {
+      lowerBound: -0.0034490735313215614,
+      upperBound: 0.0034621316849092745
+    }
   }});
 
   expect(expression.getVariableDecimals('ADX30')).toBe(2);
@@ -182,18 +226,18 @@ test('getVariableDecimals', () => {
   expect(expression.getVariableDecimals('DEMA')).toBe(4);
   expect(expression.getVariableDecimals('MACD')).toBe(6);
   expect(expression.getVariableDecimals('MACDSignal')).toBe(6);
-  expect(expression.getVariableDecimals('MACDHist')).toBe(6);
 });
 
-test.only('modifyByRandomPercent', () => {
+test('modifyByRandomPercent', () => {
   const expression = Expression({ variables });
   for (let i = 0; i < 100; i++) {
-    const variableName = _.sample(Object.keys(variables));
+    const variableNames = Object.keys(variables);
+    const variablesWithBounds = _.filter(variableNames, expression.hasBounds);
+    const variableName = _.sample(variablesWithBounds);
     const initialValue = expression.getRandomValue(variableName);
-    const lowerBound = variables[variableName][0];
-    const upperBound = variables[variableName][1];
+    const lowerBound = variables[variableName].lowerBound;
+    const upperBound = variables[variableName].upperBound;
     const modifiedValue = expression.modifyByRandomPercent(variableName, initialValue);
     assert(_.clamp(modifiedValue, lowerBound, upperBound) === modifiedValue);
   }
-
 });

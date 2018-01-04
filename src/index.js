@@ -40,7 +40,7 @@ function Expression(_config = {}) {
 
   assert(isGroupNode(_config.tree), 'The root level of the given tree has to be a logical group.');
 
-  const variables = Object.assign({}, _config.variables);
+  const variables = _.cloneDeep(_config.variables);
 
   let tree = traverse(_config.tree);
 
@@ -57,6 +57,7 @@ function Expression(_config = {}) {
     getRandomValue,
     getVariable,
     getVariableDecimals,
+    hasBounds,
     modifyByRandomPercent,
     serialize,
     deserialize
@@ -157,8 +158,7 @@ function Expression(_config = {}) {
     let expression = getPath(expressionPathArray);
     let payload = getOneSideExpressionPayload(expression);
     const variableName = getOneSideExpressionVariableName(expression);
-    let newPayload;
-    while ((newPayload = modifyByRandomPercent(variableName, payload)) && !isValidVariablePayload(variableName, newPayload));
+    const newPayload = modifyByRandomPercent(variableName, payload);
     setOneSideExpressionPayload(expression, newPayload);
   }
 
@@ -275,6 +275,9 @@ function Expression(_config = {}) {
 
   function getRandomValue(variableName) {
     const decimals = getVariableDecimals(variableName);
+    const lowerBound = getVariableLowerBound(variableName);
+    const upperBound = getVariableUpperBound(variableName);
+    assert(lowerBound !== undefined && upperBound !== undefined, `${variableName} doesn't have lower or upper bound set.`);
     return _.round(_.random(getVariableLowerBound(variableName), getVariableUpperBound(variableName), true), decimals);
   }
 
@@ -296,65 +299,91 @@ function Expression(_config = {}) {
     }
 
     const boundsDifference = upperBound - lowerBound;
-    const modifyValue = boundsDifference * modifyPercent;
-
     let resultValue;
-    if (value + modifyValue > upperBound) {
-      resultValue = _.round(value - modifyValue, decimals);
-    } else if (value - modifyValue < lowerBound) {
-      resultValue = _.round(value + modifyValue, decimals);
+    if (_.random() && upperBound !== value) {
+      const modifyValue = _.min([boundsDifference * modifyPercent, upperBound - value]);
+      resultValue = value + modifyValue;
     } else {
-      resultValue = _.round(_.random() ? value + modifyValue : value - modifyValue, decimals);
+      const modifyValue = _.min([boundsDifference * modifyPercent, value - lowerBound]);
+      resultValue = value - modifyValue;
     }
-    return resultValue;
+    return _.round(resultValue, decimals);
+  }
+
+  function hasBounds(variableName) {
+    return getVariableLowerBound(variableName) !== undefined && getVariableUpperBound(variableName) !== undefined;
+  }
+
+  function canCompare(variableName) {
+    return getVariableCompareList(variableName).length > 0;
+  }
+
+  function getVariableCompareList(variableName) {
+    if (variables[variableName].compare !== undefined) {
+      assert(_.isArray(variables[variableName].compare), 'Compare list has to be array.');
+    }
+    return variables[variableName].compare;
   }
 
   function getVariableLowerBound(variableName) {
-    return variables[variableName][0];
+    const lowerBound = variables[variableName].lowerBound;
+    if (lowerBound !== undefined) {
+      assert(_.isNumber(lowerBound));
+    }
+    return lowerBound;
   }
 
   function getVariableUpperBound(variableName) {
-    return variables[variableName][1];
+    const upperBound = variables[variableName].upperBound;
+    if (upperBound !== undefined) {
+      assert(_.isNumber(upperBound));
+    }
+    return upperBound;
   }
 
   function setRandomTree() {
     tree = traverse([every, [getRandomExpression()]]);
   }
 
-  function getRandomExpression() {
-
+  function getRandomExpression(noGroup = false) {
     let expr;
-    const availableVariableBounds = Object.keys(variables);
-    assert(availableVariableBounds.length, 'There should be at least one variable defined.');
+    const variableNames = Object.keys(variables);
+    assert(variableNames.length, 'There should be at least one variable defined.');
+
+    const variablesWithBounds = _.filter(variableNames, hasBounds);
+    const variablesToCompare = _.filter(variableNames, canCompare);
+    assert(variablesWithBounds.length !== 0 || variablesToCompare.length !== 0, `There are not enough properly configured variables.`);
 
     const rand = _.random(true);
 
     // Variable expression
-    if (_.inRange(rand, 0, 0.8)) {
+    if (_.inRange(rand, 0, 0.8) || noGroup) {
       expr = [];
       expr.push(_.sample(Object.values(operators)));
-      const firstVariableName = _.sample(availableVariableBounds);
-      expr.push(getVariable(firstVariableName));
-      _.pull(availableVariableBounds, firstVariableName);
 
-      // Both sides are variables
-      if (_.random() && availableVariableBounds.length > 0) {
-        const secondVariableName = _.sample(availableVariableBounds);
-        expr.push(getVariable(secondVariableName));
-
-      // One side is static
-      } else {
+      // Variable within bounds
+      if (variablesToCompare.length === 0 || (_.random() && variablesWithBounds.length)) {
+        const firstVariableName = _.sample(variablesWithBounds);
+        expr.push(getVariable(firstVariableName));
+        _.pull(variablesWithBounds, firstVariableName);
         expr.push(getRandomValue(firstVariableName));
+
+      // Compare to other variable
+      } else {
+        const firstVariableName = _.sample(variablesWithBounds);
+        expr.push(getVariable(firstVariableName));
+        const canCompareToVariables = getVariableCompareList(firstVariableName);
+        const secondVariableName = _.sample(canCompareToVariables);
+        expr.push(getVariable(secondVariableName));
       }
 
     // Expression group
     } else {
-      expr = [_.sample(Object.values(logics)), [getRandomExpression()]];
+      expr = [_.sample(Object.values(logics)), [getRandomExpression(true)]];
     }
 
     return expr;
   }
-
 }
 
 function deserialize(node) {
