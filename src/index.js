@@ -319,7 +319,8 @@ function Expression(_config = {}) {
   }
 
   function canCompare(variableName) {
-    return getVariableCompareList(variableName).length > 0;
+    const variableCompareList = getVariableCompareList(variableName);
+    return variableCompareList && variableCompareList.length > 0;
   }
 
   function getVariableCompareList(variableName) {
