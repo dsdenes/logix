@@ -282,6 +282,10 @@ function Expression(_config = {}) {
   }
 
   function getVariableDecimals(variableName) {
+    if (variables[variableName].decimals !== undefined) {
+      assert(_.isNumber(variables[variableName].decimals), 'Decimals has to be a number');
+      return variables[variableName].decimals;
+    }
     const lowerBound = getVariableLowerBound(variableName);
     const upperBound = getVariableUpperBound(variableName);
     const boundDifference = upperBound - lowerBound;
