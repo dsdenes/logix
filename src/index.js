@@ -375,7 +375,7 @@ function Expression(_config = {}) {
 
       // Compare to other variable
       } else {
-        const firstVariableName = _.sample(variablesWithBounds);
+        const firstVariableName = _.sample(variablesToCompare);
         expr.push(getVariable(firstVariableName));
         const canCompareToVariables = getVariableCompareList(firstVariableName);
         const secondVariableName = _.sample(canCompareToVariables);
